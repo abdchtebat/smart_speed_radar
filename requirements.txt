@@ -1,0 +1,8 @@
+streamlit
+pandas
+opencv-python
+pillow
+werkzeug
+ultralytics
+uuid
+sqlite3-binary
