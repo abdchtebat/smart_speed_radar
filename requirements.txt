@@ -1,8 +1,9 @@
 streamlit
 pandas
-opencv-python
-pillow
+matplotlib
+seaborn
+Pillow
 werkzeug
+opencv-python
 ultralytics
-uuid
-sqlite3-binary
+
