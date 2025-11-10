@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}Smart Traffic{% endblock %}</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Cairo font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html{font-family:"Cairo",system-ui}
+    .glass{backdrop-filter:blur(10px);
+      background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02))}
+    .ringed{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 20px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06)}
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100">
+  <header class="sticky top-0 z-40 glass border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 ring-2 ring-white/10"></div>
+        <h1 class="text-xl font-bold">Smart Traffic <span class="text-slate-400 font-semibold">/ Analytics</span></h1>
+      </div>
+      <nav class="text-sm text-slate-300">YOLOv8 • Speed • Density</nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="max-w-7xl mx-auto px-4 pb-10 text-slate-400 text-sm">
+    Built with Flask + Tailwind.
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

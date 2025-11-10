@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>لوحة تحكم المشرف - المستخدمين</h2>
+<p><a href="{{ url_for('export_db') }}">📦 تصدير قاعدة البيانات إلى data.sql</a></p>
+<table border="1" cellpadding="6" cellspacing="0">
+  <tr><th>ID</th><th>اسم المستخدم</th><th>إجراء</th></tr>
+  {% for user in users %}
+  <tr>
+    <td>{{ user.id }}</td>
+    <td>{{ user.username }}</td>
+    <td>
+      {% if user.username != 'admin' %}
+        <a href="{{ url_for('delete_user', user_id=user.id) }}" onclick="return confirm('تأكيد الحذف؟')">🗑 حذف</a>
+      {% else %}
+        ---
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+<p><a href="{{ url_for('home') }}">🏠 رجوع للصفحة الرئيسية</a></p>
+{% endblock %}

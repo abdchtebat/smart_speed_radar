@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-screen bg-gray-950 text-gray-100 px-8 py-10">
+
+  <h2 class="text-3xl font-bold mb-8 text-center">Visualisation des Analyses</h2>
+
+  {% if videos %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {% for v in videos %}
+      <div class="bg-gray-900 rounded-lg shadow-md p-4 border border-gray-800">
+        <h3 class="text-lg font-semibold mb-2">{{ v.name }}</h3>
+
+        <video controls class="w-full rounded mb-3">
+          <source src="{{ v.video_url }}" type="video/mp4">
+          Votre navigateur ne supporte pas la lecture vidéo.
+        </video>
+
+        <a href="{{ v.csv_url }}" download
+          class="block text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition">
+          Télécharger les données CSV
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-center text-gray-400">Aucune vidéo analysée pour le moment.</p>
+  {% endif %}
+
+</div>
+{% endblock %}

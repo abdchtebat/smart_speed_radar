@@ -1,0 +1,337 @@
+<!-- 
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Traffic Radar — Speed Limit</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto; background:#0b1020; color:#e9eef6; margin:0; padding:2rem; display:flex; justify-content:center}
+    .card{max-width:1000px; width:100%; background:#121a35; border:1px solid #223; border-radius:16px; padding:20px}
+    input{background:#0d1430; color:#e9eef6; border:1px solid #2b3558; border-radius:10px; padding:8px; width:100%}
+    label{font-size:14px}
+    button{background:#3b82f6; color:#fff; border:0; border-radius:12px; padding:10px 16px; cursor:pointer}
+    .row{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+    .row2{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+    .box{background:#0d1430; border:1px solid #2b3558; border-radius:10px; padding:10px; margin-top:10px}
+    video{max-width:100%; border-radius:10px; border:1px solid #2b3558}
+    a{color:#93c5fd}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🚥 Smart Traffic Radar — تحديد السرعة</h1>
+    <p>ارفع فيديو طريق، عيّن <b>حد السرعة</b> ومعامل التحويل (<b>Pixels per Meter</b>) أو أدخل نقطتي معايرة + المسافة الحقيقية.</p>
+    <form id="f" enctype="multipart/form-data">
+      <div class="row2">
+        <div><label>الفيديو:</label><input type="file" name="video" accept="video/*" required></div>
+        <div><label>حد السرعة (كم/س):</label><input type="number" name="speed_limit_kmh" step="1" value="60"></div>
+        <div><label>ثقة الكشف:</label><input type="number" name="conf" step="0.01" min="0" max="1" value="0.15"></div>
+      </div>
+      <div class="row">
+        <div><label>IOU:</label><input type="number" name="iou" step="0.01" min="0" max="1" value="0.45"></div>
+        <div><label>imgsz:</label><input type="number" name="imgsz" step="32" value="960"></div>
+        <div><label>وزن YOLO:</label><input name="weights" value="yolov8s.pt"></div>
+        <div><label>Pixels / meter (اختياري):</label><input name="ppm" placeholder="مثال: 95"></div>
+      </div>
+      <div class="row">
+        <div><label>cal.x1:</label><input name="cal_x1" placeholder="px"></div>
+        <div><label>cal.y1:</label><input name="cal_y1" placeholder="px"></div>
+        <div><label>cal.x2:</label><input name="cal_x2" placeholder="px"></div>
+        <div><label>cal.y2:</label><input name="cal_y2" placeholder="px"></div>
+      </div>
+      <div class="row2">
+        <div><label>cal.real_m (المسافة الحقيقية بالمتر):</label><input name="cal_real_m" placeholder="مثال: 3.5"></div>
+        <div><label>&nbsp;</label><button type="submit">تحليل</button></div>
+        <div></div>
+      </div>
+    </form>
+
+    <div id="out" class="box" style="display:none">
+      <h3>النتائج</h3>
+      <pre id="json" style="white-space:pre-wrap"></pre>
+      <div id="links"></div>
+      <div id="player" class="box"></div>
+    </div>
+  </div>
+
+  <script>
+    const f = document.getElementById('f');
+    const out = document.getElementById('out');
+    const jsonDiv = document.getElementById('json');
+    const links = document.getElementById('links');
+    const player = document.getElementById('player');
+
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(f);
+      const res = await fetch('/analyze', { method: 'POST', body: fd });
+      const data = await res.json();
+      out.style.display = 'block';
+      jsonDiv.textContent = JSON.stringify(data.summary || data, null, 2);
+      if (data.video_url){
+        player.innerHTML = `<video controls src="${data.video_url}"></video>`;
+      }
+      if (data.csv_url){
+        links.innerHTML = `<a href="${data.csv_url}" download>تنزيل CSV</a>`;
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Smart Traffic — Glass</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg">
+  <header class="nav glass">
+    <div class="brand"><span class="dot"></span><b>Smart Traffic</b><em>Analytics</em></div>
+    <div class="nav-actions">YOLOv8 • Speed • Density</div>
+  </header>
+
+  <main class="container grid">
+    <!-- فورم ->
+    <section class="card glass">
+      <h2>رفع الفيديو و الإعدادات</h2>
+      <form id="frm" enctype="multipart/form-data">
+        <div class="row two">
+          <label>الفيديو
+            <input type="file" name="video" accept="video/*" required>
+          </label>
+          <label>حد السرعة (km/h)
+            <input type="number" name="speed_limit_kmh" value="60" min="10" max="180">
+          </label>
+        </div>
+        <div class="row two">
+          <label>Pixels / meter (PPM)
+            <input type="number" name="ppm" step="0.1" placeholder="مثال: 30" value="30">
+          </label>
+          <div></div>
+        </div>
+
+        <!-- قيم افتراضية للباك (مخبّاة) — يمكن تحذفهم إذا ماحتاجهم البروسيسر ->
+        <input type="hidden" name="conf" value="0.25">
+        <input type="hidden" name="iou"  value="0.45">
+        <input type="hidden" name="weights" value="yolov8s.pt">
+        <input type="hidden" name="imgsz" value="960">
+
+        <div class="actions">
+          <button class="btn primary" id="run"><span class="spin" id="sp"></span>تحليل الفيديو</button>
+          <button type="reset" class="btn">تفريغ</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- نتائج ->
+    <section class="card glass">
+      <h2>النتائج</h2>
+      <div class="stats">
+        <div><span>Tracks</span><b id="total_tracks">-</b></div>
+        <div><span>Over-limit</span><b id="over_limit">-</b></div>
+        <div><span>Frames</span><b id="frames">-</b></div>
+        <div><span>PPM</span><b id="ppm">-</b></div>
+        <div><span>Limit</span><b id="limit">-</b></div>
+        <div><span>Avg density</span><b id="avgd">-</b></div>
+        <div><span>Max density</span><b id="maxd">-</b></div>
+        <div class="wide"><span>Overall</span><b id="overall">-</b></div>
+      </div>
+
+      <div class="links hidden" id="links">
+        <a id="aVideo" class="btn ghost" target="_blank">مشاهدة الفيديو</a>
+        <a id="aCSV" class="btn ghost" target="_blank">تحميل CSV</a>
+      </div>
+
+      <video id="vid" class="preview" controls playsinline></video>
+    </section>
+  </main>
+
+  <script>
+    const frm = document.getElementById('frm');
+    const sp  = document.getElementById('sp');
+
+    frm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      sp.classList.add('on');
+
+      const res  = await fetch('/analyze', { method:'POST', body: new FormData(frm) });
+      const data = await res.json().catch(()=>({error:'Invalid JSON'}));
+
+      sp.classList.remove('on');
+      if (data.error) { alert(data.error); return; }
+
+      const s = data.summary || {};
+      total_tracks.textContent = s.total_tracks ?? '-';
+      over_limit.textContent   = s.over_limit_count ?? '-';
+      frames.textContent       = s.frames ?? '-';
+      ppm.textContent          = s.pixels_per_meter ?? '-';
+      limit.textContent        = s.speed_limit_kmh ?? '-';
+      avgd.textContent         = (s.avg_density_live ?? 0).toFixed(1);
+      maxd.textContent         = s.max_density_live ?? '-';
+      overall.textContent      = s.overall_density_label ?? '-';
+
+      aVideo.href = data.video_url;
+      aCSV.href   = data.csv_url;
+      links.classList.remove('hidden');
+
+      vid.src = data.video_url;
+      vid.load();
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--  -->
+{% extends "base.html" %}
+{% block title %}Smart Traffic — Glass{% endblock %}
+{% block content %}
+<div class="grid lg:grid-cols-2 gap-6">
+  <!-- Results -->
+  <section class="glass ringed rounded-2xl p-5 border border-white/10">
+    <h2 class="text-xl font-bold mb-3">Results</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+      <div class="rounded-xl p-3 bg-slate-900/60 border border-white/10">
+        <div class="text-xs text-slate-400">Tracks</div><div id="total_tracks" class="text-2xl font-bold">-</div>
+      </div>
+      <div class="rounded-xl p-3 bg-slate-900/60 border border-white/10">
+        <div class="text-xs text-slate-400">Over-limit</div><div id="over_limit" class="text-2xl font-bold">-</div>
+      </div>
+      <div class="rounded-xl p-3 bg-slate-900/60 border border-white/10">
+        <div class="text-xs text-slate-400">Frames</div><div id="frames" class="text-2xl font-bold">-</div>
+      </div>
+      <div class="rounded-xl p-3 bg-slate-900/60 border border-white/10">
+        <div class="text-xs text-slate-400">PPM</div><div id="ppm" class="text-2xl font-bold">-</div>
+      </div>
+      <div class="rounded-xl p-3 bg-slate-900/60 border border-white/10 col-span-2 md:col-span-4">
+        <div class="flex items-center justify-center gap-6 text-sm">
+          <div>Limit: <b id="limit">-</b> km/h</div>
+          <div>Avg density: <b id="avgd">-</b></div>
+          <div>Max density: <b id="maxd">-</b></div>
+          <div>Overall: <b id="overall">-</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="links" class="mt-4 hidden flex items-center gap-3">
+      <a id="aVideo" class="px-4 py-2 rounded-xl bg-white/10 border border-white/10" target="_blank">Watch video</a>
+      <a id="aCSV" class="px-4 py-2 rounded-xl bg-white/10 border border-white/10" target="_blank">Download CSV</a>
+    </div>
+
+    <div class="mt-4 rounded-xl overflow-hidden border border-white/10">
+      <video id="vid" class="w-full block" controls playsinline></video>
+    </div>
+  </section>
+
+  <!-- Upload & Settings -->
+  <section class="glass ringed rounded-2xl p-5 border border-white/10">
+    <h2 class="text-xl font-bold mb-3">Upload video & settings</h2>
+    <form id="frm" enctype="multipart/form-data" class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-sm">Video
+          <input type="file" name="video" accept="video/*" required
+                 class="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2">
+        </label>
+        <label class="text-sm">Speed limit (km/h)
+          <input type="number" name="speed_limit_kmh" value="60" min="10" max="180"
+                 class="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2">
+        </label>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-sm">Pixels / meter (PPM)
+          <input type="number" name="ppm" value="30" step="0.1"
+                 class="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2">
+        </label>
+        <div></div>
+      </div>
+
+      <!-- Backend defaults (hidden) -->
+      <input type="hidden" name="conf" value="0.25">
+      <input type="hidden" name="iou"  value="0.45">
+      <input type="hidden" name="weights" value="yolov8s.pt">
+      <input type="hidden" name="imgsz" value="960">
+
+      <div class="flex items-center gap-3">
+        <button id="run" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 font-semibold">
+          <span id="sp" class="inline-block w-4 h-4 me-2 rounded-full border-2 border-white border-t-transparent animate-none"></span>
+          Analyze video
+        </button>
+        <button type="reset" class="px-4 py-2 rounded-xl bg-white/10 border border-white/10">Reset</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const frm = document.getElementById('frm');
+const sp  = document.getElementById('sp');
+
+frm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  sp.classList.remove('animate-none'); sp.classList.add('animate-spin');
+
+  const res  = await fetch('/analyze', { method:'POST', body:new FormData(frm) });
+  const data = await res.json().catch(()=>({error:'Invalid JSON'}));
+
+  sp.classList.add('animate-none'); sp.classList.remove('animate-spin');
+  if (data.error) { alert(data.error); return; }
+
+  const s = data.summary || {};
+  total_tracks.textContent = s.total_tracks ?? '-';
+  over_limit.textContent   = s.over_limit_count ?? '-';
+  frames.textContent       = s.frames ?? '-';
+  ppm.textContent          = s.pixels_per_meter ?? '-';
+  limit.textContent        = s.speed_limit_kmh ?? '-';
+  avgd.textContent         = (s.avg_density_live ?? 0).toFixed(1);
+  maxd.textContent         = s.max_density_live ?? '-';
+  overall.textContent      = s.overall_density_label ?? '-';
+
+  aVideo.href = data.video_url; aCSV.href = data.csv_url;
+  links.classList.remove('hidden');
+  vid.src = data.video_url; vid.load();
+});
+</script>
+{% endblock %}
